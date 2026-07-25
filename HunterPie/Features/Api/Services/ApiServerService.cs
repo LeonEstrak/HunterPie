@@ -7,9 +7,11 @@ using System.Threading.Tasks;
 using HunterPie.Core.Client;
 using HunterPie.Core.Client.Configuration.Versions;
 using HunterPie.Core.Observability.Logging;
+using HunterPie.Features.Api.Models;
 using HunterPie.Features.Api.Server;
 using HunterPie.Features.Api.Server.Http;
 using HunterPie.Features.Api.Server.WebSocket;
+using HunterPie.Features.Api.Session;
 
 namespace HunterPie.Features.Api.Services;
 
@@ -27,10 +29,12 @@ internal class ApiServerService : IDisposable
 
     private ApiHttpServer? _server;
     private readonly WebSocketSessionManager _sessions = new();
+    private readonly GameSessionSnapshot _snapshot;
 
-    public ApiServerService(V5Config config)
+    public ApiServerService(V5Config config, GameSessionSnapshot snapshot)
     {
         _config = config;
+        _snapshot = snapshot;
     }
 
     public bool IsRunning => _server is not null;
@@ -67,6 +71,13 @@ internal class ApiServerService : IDisposable
     {
         server.Routes.MapGet("/", Authenticated(HandleIndex));
         server.Routes.MapGet("/api/v1/status", Authenticated(HandleStatus));
+        server.Routes.MapGet("/api/v1/game", Authenticated(WithSession((snapshot, _) => snapshot.Game)));
+        server.Routes.MapGet("/api/v1/player", Authenticated(WithSession((snapshot, _) => snapshot.Player)));
+        server.Routes.MapGet("/api/v1/party", Authenticated(WithSession((snapshot, _) => snapshot.Party)));
+        server.Routes.MapGet("/api/v1/monsters", Authenticated(WithSession((snapshot, _) => snapshot.Monsters)));
+        server.Routes.MapGet("/api/v1/monsters/{index}", Authenticated(HandleMonsterByIndex));
+        server.Routes.MapGet("/api/v1/quest", Authenticated(WithSession((snapshot, _) => snapshot.Quest)));
+        server.Routes.MapGet("/api/v1/chat", Authenticated(WithSession((snapshot, _) => snapshot.Chat)));
         server.Routes.MapGet("/ws", Authenticated(HandleWebSocket));
     }
 
@@ -95,6 +106,48 @@ internal class ApiServerService : IDisposable
         };
     }
 
+    /// <summary>
+    /// Wraps a route that requires an active game session. Responds 503
+    /// when no game is connected, 204 when the requested section is null
+    /// (e.g. no active quest), otherwise serializes the section under the
+    /// snapshot lock.
+    /// </summary>
+    private Server.Routing.ApiRouteHandler WithSession(Func<GameSessionSnapshot, HttpRequest, object?> sectionSelector)
+    {
+        return (request, stream, cancellationToken) =>
+        {
+            (bool hasSession, object? section) = _snapshot.ExecuteLocked(snapshot =>
+                (snapshot.HasSession, sectionSelector(snapshot, request)));
+
+            if (!hasSession)
+                return HttpResponse.WriteErrorAsync(stream, 503, "no_active_session", cancellationToken);
+
+            if (section is null)
+                return HttpResponse.WriteJsonAsync(stream, 204, "null", cancellationToken);
+
+            string json = _snapshot.ExecuteLocked(_ => ApiJson.Serialize(section));
+            return HttpResponse.WriteJsonAsync(stream, 200, json, cancellationToken);
+        };
+    }
+
+    private Task HandleMonsterByIndex(HttpRequest request, NetworkStream stream, CancellationToken cancellationToken)
+    {
+        if (!request.RouteValues.TryGetValue("index", out string? indexText) || !int.TryParse(indexText, out int index))
+            return HttpResponse.WriteErrorAsync(stream, 400, "invalid_index", cancellationToken);
+
+        (bool hasSession, MonsterDto? monster) = _snapshot.ExecuteLocked(snapshot =>
+            (snapshot.HasSession, snapshot.Monsters.FirstOrDefault(it => it.Index == index)));
+
+        if (!hasSession)
+            return HttpResponse.WriteErrorAsync(stream, 503, "no_active_session", cancellationToken);
+
+        if (monster is null)
+            return HttpResponse.WriteErrorAsync(stream, 404, "monster_not_found", cancellationToken);
+
+        string json = _snapshot.ExecuteLocked(_ => ApiJson.Serialize(monster));
+        return HttpResponse.WriteJsonAsync(stream, 200, json, cancellationToken);
+    }
+
     private Task HandleIndex(HttpRequest request, NetworkStream stream, CancellationToken cancellationToken)
     {
         var index = new
@@ -109,12 +162,23 @@ internal class ApiServerService : IDisposable
 
     private Task HandleStatus(HttpRequest request, NetworkStream stream, CancellationToken cancellationToken)
     {
+        object game = _snapshot.ExecuteLocked(snapshot => snapshot.HasSession
+            ? (object)new
+            {
+                connected = true,
+                type = snapshot.GameType,
+                processName = snapshot.GameProcessName,
+                processId = snapshot.GameProcessId
+            }
+            : new { connected = false });
+
         var status = new
         {
             hunterPieVersion = ClientInfo.Version.ToString(),
             apiVersion = API_VERSION,
             uptimeSeconds = (long)(DateTime.UtcNow - _startedAt).TotalSeconds,
-            game = (object?)null
+            webSocketClients = _sessions.ClientCount,
+            game
         };
 
         return HttpResponse.WriteJsonAsync(stream, 200, ApiJson.Serialize(status), cancellationToken);

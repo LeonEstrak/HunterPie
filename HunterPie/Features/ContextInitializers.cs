@@ -2,6 +2,7 @@
 using HunterPie.Core.Game;
 using HunterPie.DI;
 using HunterPie.Domain.Interfaces;
+using HunterPie.Features.Api.Session;
 using HunterPie.Features.Backup.Services;
 using HunterPie.Features.Statistics.Services;
 using HunterPie.Game.Rise;
@@ -22,7 +23,8 @@ internal static class ContextInitializers
         typeof(MHWContextInitializer),
         typeof(MHRContextInitializer),
         typeof(GameSaveBackupService),
-        typeof(QuestTrackerService)
+        typeof(QuestTrackerService),
+        typeof(ApiContextTracker)
     };
 
     public static Task InitializeAsync(Context context)
