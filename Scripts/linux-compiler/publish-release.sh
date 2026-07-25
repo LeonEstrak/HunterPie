@@ -64,6 +64,15 @@ else
     echo "[publish] WARNING: Localization submodule not initialized, Languages/ will be missing" >&2
 fi
 
+# Seed config.json: core logic (scanning, API server, trackers) enabled,
+# game overlay UI disabled. HunterPie populates missing properties from
+# coded defaults, so only the overrides are shipped.
+SEED_CONFIG="$SCRIPT_DIR/package/config.json"
+if [[ -f "$SEED_CONFIG" ]]; then
+    cp "$SEED_CONFIG" "$OUTPUT_DIR/config.json"
+    echo "[publish] Seeded config.json (overlay disabled, core + API enabled)"
+fi
+
 echo "[publish] Creating archive..."
 ZIP_PATH="$ARTIFACTS_DIR/HunterPie-v$VERSION-win-x64.zip"
 rm -f "$ZIP_PATH"
