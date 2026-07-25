@@ -1,4 +1,4 @@
-# Compile-Check Framework (Linux + Protontricks)
+# Linux Compiler (Protontricks-based build framework)
 
 HunterPie is a Windows-only WPF application (`net10.0-windows`), so it cannot
 be compiled natively on Linux. This framework validates compilation (and runs
@@ -48,17 +48,17 @@ flatpak override --user com.github.Matoking.protontricks \
 
 ```bash
 # One-time setup
-./Scripts/compile-check/setup-toolchain.sh
-./Scripts/compile-check/setup-linux-sdk.sh   # auto-run on demand
+./Scripts/linux-compiler/setup-toolchain.sh
+./Scripts/linux-compiler/setup-linux-sdk.sh   # auto-run on demand
 
 # Compile validation
-./Scripts/compile-check/compile-check.sh
+./Scripts/linux-compiler/compile-check.sh
 
 # Compile + unit tests
-./Scripts/compile-check/compile-check.sh --tests
+./Scripts/linux-compiler/compile-check.sh --tests
 
 # Release configuration
-./Scripts/compile-check/compile-check.sh --configuration Release
+./Scripts/linux-compiler/compile-check.sh --configuration Release
 ```
 
 Build logs: `~/.local/share/hunterpie-compile-check/logs/`.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shared configuration for the HunterPie compile-check framework.
+# Shared configuration for the HunterPie linux-compiler framework.
 # Sourced by the other scripts in this directory.
 
 # Steam AppID whose Proton prefix hosts the build environment.
