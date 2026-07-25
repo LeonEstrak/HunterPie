@@ -1,4 +1,5 @@
-﻿using HunterPie.Core.Client.Configuration.Debug;
+﻿using HunterPie.Core.Client.Configuration.Api;
+using HunterPie.Core.Client.Configuration.Debug;
 using HunterPie.Core.Client.Configuration.Games;
 using HunterPie.Core.Client.Configuration.Overlay;
 
@@ -19,4 +20,6 @@ public class V5Config : VersionedConfig
     public OverlayClientConfig Overlay { get; set; } = new();
 
     public DevelopmentConfig Development { get; set; } = new();
+
+    public ApiClientConfig Api { get; set; } = new();
 }
