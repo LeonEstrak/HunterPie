@@ -11,7 +11,7 @@ source "$SCRIPT_DIR/env.sh"
 SDK_ZIP_URL="https://aka.ms/dotnet/$HUNTERPIE_CC_SDK_CHANNEL/dotnet-sdk-win-x64.zip"
 SDK_ZIP_PATH="$HUNTERPIE_CC_TOOLCHAIN_DIR/dotnet-sdk-win-x64.zip"
 
-if [[ -x "$HUNTERPIE_CC_DOTNET_DIR/dotnet.exe" ]]; then
+if [[ -f "$HUNTERPIE_CC_DOTNET_DIR/dotnet.exe" ]]; then
     echo "[setup-toolchain] Windows .NET SDK already present at $HUNTERPIE_CC_DOTNET_DIR"
     exit 0
 fi

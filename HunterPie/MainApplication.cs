@@ -7,6 +7,7 @@ using HunterPie.Features.Account.Config;
 using HunterPie.Features.Account.Controller;
 using HunterPie.Features.Account.UseCase;
 using HunterPie.Features.Analytics.Entity;
+using HunterPie.Features.Api.Services;
 using HunterPie.Features.Game.Service;
 using HunterPie.Internal;
 using HunterPie.UI.Main.Navigators;
@@ -25,7 +26,8 @@ internal class MainApplication(
     NavigatorController navigatorController,
     GameContextController gameContextController,
     AccountController accountController,
-    IControllableWatcherService controllableWatcherService) : IDisposable
+    IControllableWatcherService controllableWatcherService,
+    ApiServerService apiServerService) : IDisposable
 {
     private readonly ILogger _logger = LoggerFactory.Create();
 
@@ -38,6 +40,7 @@ internal class MainApplication(
             return false;
 #endif
         gameContextController.Subscribe();
+        apiServerService.Start();
         remoteConfigSyncService.Start();
         await navigatorController.SetupAsync();
         controllableWatcherService.Start();
@@ -78,6 +81,7 @@ internal class MainApplication(
 
     public void Dispose()
     {
+        apiServerService.Dispose();
         ConfigManager.SaveAll();
         AsyncHelper.RunSync(remoteAccountConfigUseCase.Upload);
     }

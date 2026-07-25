@@ -23,7 +23,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ ! -x "$HUNTERPIE_CC_DOTNET_DIR/dotnet.exe" ]]; then
+if [[ ! -f "$HUNTERPIE_CC_DOTNET_DIR/dotnet.exe" ]]; then
     echo "[compile-check] Toolchain missing, running setup..."
     "$SCRIPT_DIR/setup-toolchain.sh" || exit 1
 fi
