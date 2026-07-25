@@ -9,6 +9,7 @@ using HunterPie.Core.Client.Configuration.Versions;
 using HunterPie.Core.Observability.Logging;
 using HunterPie.Features.Api.Server;
 using HunterPie.Features.Api.Server.Http;
+using HunterPie.Features.Api.Server.WebSocket;
 
 namespace HunterPie.Features.Api.Services;
 
@@ -25,6 +26,7 @@ internal class ApiServerService : IDisposable
     private readonly DateTime _startedAt = DateTime.UtcNow;
 
     private ApiHttpServer? _server;
+    private readonly WebSocketSessionManager _sessions = new();
 
     public ApiServerService(V5Config config)
     {
@@ -65,6 +67,7 @@ internal class ApiServerService : IDisposable
     {
         server.Routes.MapGet("/", Authenticated(HandleIndex));
         server.Routes.MapGet("/api/v1/status", Authenticated(HandleStatus));
+        server.Routes.MapGet("/ws", Authenticated(HandleWebSocket));
     }
 
     /// <summary>
@@ -115,6 +118,37 @@ internal class ApiServerService : IDisposable
         };
 
         return HttpResponse.WriteJsonAsync(stream, 200, ApiJson.Serialize(status), cancellationToken);
+    }
+
+    private async Task HandleWebSocket(HttpRequest request, NetworkStream stream, CancellationToken cancellationToken)
+    {
+        var connection = new WebSocketConnection();
+
+        if (!await connection.TryHandshakeAsync(request, stream, cancellationToken))
+            return;
+
+        _sessions.Add(connection);
+
+        var hello = new
+        {
+            type = "hello",
+            data = new
+            {
+                apiVersion = API_VERSION,
+                game = (object?)null
+            }
+        };
+
+        await connection.SendTextAsync(ApiJson.Serialize(hello), cancellationToken);
+
+        try
+        {
+            await connection.RunAsync(cancellationToken);
+        }
+        finally
+        {
+            _sessions.Remove(connection);
+        }
     }
 
     public void Dispose()
