@@ -12,10 +12,10 @@ namespace HunterPie.Core.Client.Configuration.Api;
     group: CommonConfigurationGroups.CLIENT)]
 public class ApiClientConfig : ISettings
 {
-    [ConfigurationProperty("ENABLE_API_SERVER", group: ApiConfigurationGroups.API_SERVER)]
+    [ConfigurationProperty("ENABLE_API_SERVER", requiresRestart: true, group: ApiConfigurationGroups.API_SERVER)]
     public Observable<bool> Enable { get; set; } = true;
 
-    [ConfigurationProperty("API_SERVER_BIND_ALL_INTERFACES", group: ApiConfigurationGroups.API_SERVER)]
+    [ConfigurationProperty("API_SERVER_BIND_ALL_INTERFACES", requiresRestart: true, group: ApiConfigurationGroups.API_SERVER)]
     public Observable<bool> BindAllInterfaces { get; set; } = true;
 
     [ConfigurationProperty("API_SERVER_PORT", requiresRestart: true, group: ApiConfigurationGroups.API_SERVER)]

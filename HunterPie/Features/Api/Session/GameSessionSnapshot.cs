@@ -68,6 +68,17 @@ internal class GameSessionSnapshot
         }
     }
 
+    /// <summary>Returns all pending discrete events and clears the queue.</summary>
+    public object[] ConsumePendingEvents()
+    {
+        lock (_lock)
+        {
+            var events = PendingEvents.ToArray();
+            PendingEvents.Clear();
+            return events;
+        }
+    }
+
     public void Reset()
     {
         ExecuteLocked(snapshot =>

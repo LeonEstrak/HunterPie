@@ -28,13 +28,20 @@ internal class ApiServerService : IDisposable
     private readonly DateTime _startedAt = DateTime.UtcNow;
 
     private ApiHttpServer? _server;
-    private readonly WebSocketSessionManager _sessions = new();
+    private readonly WebSocketSessionManager _sessions;
+    private readonly ApiBroadcastService _broadcastService;
     private readonly GameSessionSnapshot _snapshot;
 
-    public ApiServerService(V5Config config, GameSessionSnapshot snapshot)
+    public ApiServerService(
+        V5Config config,
+        GameSessionSnapshot snapshot,
+        WebSocketSessionManager sessions,
+        ApiBroadcastService broadcastService)
     {
         _config = config;
         _snapshot = snapshot;
+        _sessions = sessions;
+        _broadcastService = broadcastService;
     }
 
     public bool IsRunning => _server is not null;
@@ -58,6 +65,7 @@ internal class ApiServerService : IDisposable
             _server = new ApiHttpServer();
             MapRoutes(_server);
             _server.Start(address, port);
+            _broadcastService.Start();
         }
         catch (SocketException err)
         {
@@ -193,17 +201,20 @@ internal class ApiServerService : IDisposable
 
         _sessions.Add(connection);
 
-        var hello = new
+        string hello = _snapshot.ExecuteLocked(snapshot => ApiJson.Serialize(new
         {
             type = "hello",
             data = new
             {
                 apiVersion = API_VERSION,
-                game = (object?)null
+                game = snapshot.GameType
             }
-        };
+        }));
 
-        await connection.SendTextAsync(ApiJson.Serialize(hello), cancellationToken);
+        await connection.SendTextAsync(hello, cancellationToken);
+
+        string fullSnapshot = _snapshot.ExecuteLocked(ApiStateSerializer.SerializeFullSnapshot);
+        await connection.SendTextAsync(fullSnapshot, cancellationToken);
 
         try
         {
@@ -217,6 +228,7 @@ internal class ApiServerService : IDisposable
 
     public void Dispose()
     {
+        _broadcastService.Dispose();
         _server?.Dispose();
         _server = null;
     }
