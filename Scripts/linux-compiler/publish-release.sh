@@ -10,9 +10,19 @@
 # on the target machine (same as official HunterPie releases).
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" && pwd)"
 # shellcheck source=env.sh
 source "$SCRIPT_DIR/env.sh"
+
+# --self-contained: bundle the .NET Desktop Runtime into the output so the
+# app runs without any runtime installation (e.g. inside a Proton prefix).
+SELF_CONTAINED=0
+for arg in "$@"; do
+    case "$arg" in
+        --self-contained) SELF_CONTAINED=1 ;;
+        *) echo "unknown argument: $arg" >&2; exit 2 ;;
+    esac
+done
 
 if [[ ! -f "$HUNTERPIE_CC_DOTNET_DIR/dotnet.exe" ]]; then
     echo "[publish] Toolchain missing, running setup..."
@@ -26,7 +36,9 @@ VERSION="$(sed -n 's/.*AssemblyVersion("\([^"]*\)").*/\1/p' "$HUNTERPIE_CC_REPO_
 VERSION="${VERSION:-0.0.0.0}"
 
 ARTIFACTS_DIR="$HUNTERPIE_CC_TOOLCHAIN_DIR/artifacts"
-OUTPUT_DIR="$ARTIFACTS_DIR/HunterPie-v$VERSION-win-x64"
+SUFFIX="win-x64"
+[[ "$SELF_CONTAINED" -eq 1 ]] && SUFFIX="win-x64-selfcontained"
+OUTPUT_DIR="$ARTIFACTS_DIR/HunterPie-v$VERSION-$SUFFIX"
 WINE_OUTPUT_DIR="$(to_wine_path "$OUTPUT_DIR")"
 
 echo "[publish] Publishing HunterPie v$VERSION (Release) to $OUTPUT_DIR"
@@ -42,6 +54,13 @@ PUBLISH_ARGS=(
     -m:1
     -p:UseSharedCompilation=false
 )
+
+if [[ "$SELF_CONTAINED" -eq 1 ]]; then
+    PUBLISH_ARGS+=(
+        -r win-x64
+        --self-contained true
+    )
+fi
 
 LOG_FILE="$HUNTERPIE_CC_TOOLCHAIN_DIR/logs/publish-$(date +%Y%m%d-%H%M%S).log"
 mkdir -p "$HUNTERPIE_CC_TOOLCHAIN_DIR/logs"
@@ -73,11 +92,13 @@ if [[ -f "$SEED_CONFIG" ]]; then
     echo "[publish] Seeded config.json (overlay disabled, core + API enabled)"
 fi
 
-echo "[publish] Creating archive..."
-ZIP_PATH="$ARTIFACTS_DIR/HunterPie-v$VERSION-win-x64.zip"
-rm -f "$ZIP_PATH"
-(cd "$ARTIFACTS_DIR" && zip -q -r "$ZIP_PATH" "$(basename "$OUTPUT_DIR")")
+if [[ "$SELF_CONTAINED" -eq 0 ]]; then
+    echo "[publish] Creating archive..."
+    ZIP_PATH="$ARTIFACTS_DIR/HunterPie-v$VERSION-$SUFFIX.zip"
+    rm -f "$ZIP_PATH"
+    (cd "$ARTIFACTS_DIR" && zip -q -r "$ZIP_PATH" "$(basename "$OUTPUT_DIR")")
+    echo "[publish]   archive: $ZIP_PATH ($(du -h "$ZIP_PATH" | cut -f1))"
+fi
 
 echo "[publish] Done."
 echo "[publish]   folder: $OUTPUT_DIR"
-echo "[publish]   archive: $ZIP_PATH ($(du -h "$ZIP_PATH" | cut -f1))"

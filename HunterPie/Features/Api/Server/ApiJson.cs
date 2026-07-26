@@ -6,14 +6,15 @@ namespace HunterPie.Features.Api.Server;
 
 /// <summary>
 /// Shared JSON serialization settings for the API: camelCase property names,
-/// enums as strings, null members omitted.
+/// enums as strings, nulls included explicitly so the schema is stable and
+/// clients can distinguish "no value" from a missing field.
 /// </summary>
 internal static class ApiJson
 {
     public static readonly JsonSerializerSettings Settings = new()
     {
         ContractResolver = new CamelCasePropertyNamesContractResolver(),
-        NullValueHandling = NullValueHandling.Ignore,
+        NullValueHandling = NullValueHandling.Include,
         Converters = { new StringEnumConverter() }
     };
 
