@@ -47,11 +47,11 @@ body,
   grid-template-areas:
     'header header header'
     'player monsters party';
-  gap: 0.6rem;
+  gap: 0.8rem;
   height: 100dvh;
-  padding: 0.6rem;
-  padding-top: calc(0.6rem + env(safe-area-inset-top));
-  padding-bottom: calc(0.6rem + env(safe-area-inset-bottom));
+  padding: 0.8rem;
+  padding-top: calc(0.8rem + env(safe-area-inset-top));
+  padding-bottom: calc(0.8rem + env(safe-area-inset-bottom));
 }
 
 .header-area { grid-area: header; }
@@ -63,11 +63,20 @@ body,
   background: var(--bg-panel);
   border: 1px solid var(--border);
   border-radius: 0.5rem;
-  padding: 0.6rem;
+  padding: 0.75rem;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.55rem;
+}
+
+/* Panels whose content may exceed the grid share (e.g. when the browser
+   is zoomed) scroll internally instead of clipping content */
+.player-area,
+.party-area {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
 .panel-title {

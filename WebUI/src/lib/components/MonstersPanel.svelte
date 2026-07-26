@@ -46,7 +46,7 @@
   .monster-list {
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.8rem;
     height: 100%;
     overflow: hidden;
   }

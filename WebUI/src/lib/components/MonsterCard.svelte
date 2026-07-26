@@ -91,6 +91,15 @@
     transition: border-color 300ms;
   }
 
+  /* Pin header + bars; only the parts list absorbs vertical squeeze
+     (e.g. browser zoom) by scrolling internally instead of the bars
+     being clipped out of view */
+  .monster-header,
+  .hp-bar,
+  .stamina-bar {
+    flex-shrink: 0;
+  }
+
   .monster.enraged {
     border-color: var(--enrage);
     animation: enrage-pulse 1.2s ease-in-out infinite;
@@ -182,8 +191,6 @@
 
   .stamina-bar .bar-label {
     font-size: 0.58rem;
-    justify-content: flex-end;
-    padding-right: 0.3rem;
   }
 
   .capture-marker {
@@ -200,6 +207,10 @@
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
   }
 
   .ailments {
@@ -208,9 +219,12 @@
     gap: 0.25rem;
   }
 
-  /* Phone: collapse detail sections, keep bars + flags */
+  /* Phone: cap detail sections, keep bars + flags */
   @media (max-width: 700px) {
-    .parts,
+    .parts {
+      max-height: 4.5rem;
+    }
+
     .ailments {
       display: none;
     }
