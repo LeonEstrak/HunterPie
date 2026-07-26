@@ -85,7 +85,12 @@ internal class ApiServerService : IDisposable
 
     private void MapRoutes(ApiHttpServer server)
     {
-        server.Routes.MapGet("/", Authenticated(HandleIndex));
+        // When a WebUI bundle is present, "/" belongs to the static files
+        // (they are consulted on route miss); the API index moves to /api/v1.
+        if (server.StaticFiles is null)
+            server.Routes.MapGet("/", Authenticated(HandleIndex));
+
+        server.Routes.MapGet("/api/v1", Authenticated(HandleIndex));
         server.Routes.MapGet("/api/v1/status", Authenticated(HandleStatus));
         server.Routes.MapGet("/api/v1/game", Authenticated(WithSession((snapshot, _) => snapshot.Game)));
         server.Routes.MapGet("/api/v1/player", Authenticated(WithSession((snapshot, _) => snapshot.Player)));
