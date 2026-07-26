@@ -181,11 +181,9 @@
   }
 
   .stamina-bar .bar-label {
-    font-size: 0.55rem;
+    font-size: 0.58rem;
     justify-content: flex-end;
     padding-right: 0.3rem;
-    color: rgba(0, 0, 0, 0.7);
-    text-shadow: none;
   }
 
   .capture-marker {

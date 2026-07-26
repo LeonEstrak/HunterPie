@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { MonsterAilment } from '../api/types'
+  import { prettifyName } from '../api/format'
 
   let { ailment }: { ailment: MonsterAilment } = $props()
 
@@ -11,9 +12,9 @@
 <div
   class="ailment"
   class:active
-  title="{ailment.name} — build-up {ailment.buildUp.toFixed(0)}/{ailment.maxBuildUp.toFixed(0)} · timer {ailment.timer.toFixed(1)}/{ailment.maxTimer.toFixed(0)}s"
+  title="{prettifyName(ailment.name)} — build-up {ailment.buildUp.toFixed(0)}/{ailment.maxBuildUp.toFixed(0)} · timer {ailment.timer.toFixed(1)}/{ailment.maxTimer.toFixed(0)}s"
 >
-  <span class="ailment-name">{ailment.name}</span>
+  <span class="ailment-name">{prettifyName(ailment.name)}</span>
   <div class="ailment-track">
     <div
       class="ailment-fill"

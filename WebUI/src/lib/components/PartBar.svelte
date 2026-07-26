@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { MonsterPart } from '../api/types'
+  import { prettifyName } from '../api/format'
 
   let { part }: { part: MonsterPart } = $props()
 
@@ -15,8 +16,8 @@
   let broken = $derived(part.breakCount > 0)
 </script>
 
-<div class="part" class:broken title="{part.name} — HP {part.health.toFixed(0)}/{part.maxHealth.toFixed(0)} · Flinch {part.flinch.toFixed(0)}/{part.maxFlinch.toFixed(0)}{broken ? ` · broken ×${part.breakCount}` : ''}">
-  <span class="part-name">{part.name}{#if broken}<sup>×{part.breakCount}</sup>{/if}</span>
+<div class="part" class:broken title="{prettifyName(part.name)} — HP {part.health.toFixed(0)}/{part.maxHealth.toFixed(0)} · Flinch {part.flinch.toFixed(0)}/{part.maxFlinch.toFixed(0)}{broken ? ` · broken ×${part.breakCount}` : ''}">
+  <span class="part-name">{prettifyName(part.name)}{#if broken}<sup>×{part.breakCount}</sup>{/if}</span>
   <div class="micro-bars">
     <div class="micro-bar">
       <div
@@ -45,12 +46,11 @@
   }
 
   .part-name {
-    font-size: 0.68rem;
-    width: 5.2em;
-    flex-shrink: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: 0.72rem;
+    flex: 0 1 auto;
+    max-width: 45%;
+    line-height: 1.15;
+    /* Full name always visible: wraps instead of being ellipsed */
   }
 
   .part-name sup {
