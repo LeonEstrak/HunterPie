@@ -43,17 +43,20 @@
     min-height: 0;
   }
 
+  /* The list itself scrolls; cards keep their natural height and are
+     never internally scrollable */
   .monster-list {
     display: flex;
     flex-direction: column;
     gap: 0.8rem;
     height: 100%;
-    overflow: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
   }
 
   .monster-list > :global(.monster) {
-    flex: 1;
-    min-height: 0;
+    flex-shrink: 0;
   }
 
   .empty-panel {

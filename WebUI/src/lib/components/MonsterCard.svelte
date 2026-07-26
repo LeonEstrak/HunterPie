@@ -23,7 +23,6 @@
     monster.parts
       .filter((p) => p.maxHealth > 0 || p.maxFlinch > 0 || p.maxSever > 0)
       .sort((a, b) => a.health / (a.maxHealth || 1) - b.health / (b.maxHealth || 1))
-      .slice(0, 6)
   )
 
   let visibleAilments = $derived(
@@ -182,7 +181,7 @@
   }
 
   .stamina-bar {
-    height: 0.55rem;
+    height: 0.95rem;
   }
 
   .stamina-fill {
@@ -190,7 +189,7 @@
   }
 
   .stamina-bar .bar-label {
-    font-size: 0.58rem;
+    font-size: 0.65rem;
   }
 
   .capture-marker {
@@ -203,14 +202,11 @@
     z-index: 1;
   }
 
+  /* Parts chips wrap across the full card width; ailments on the next row */
   .parts {
     display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-    min-height: 0;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--border) transparent;
+    flex-wrap: wrap;
+    gap: 0.25rem;
   }
 
   .ailments {
@@ -219,16 +215,7 @@
     gap: 0.25rem;
   }
 
-  /* Phone: cap detail sections, keep bars + flags */
   @media (max-width: 700px) {
-    .parts {
-      max-height: 4.5rem;
-    }
-
-    .ailments {
-      display: none;
-    }
-
     .monster-title h2 {
       font-size: 0.95rem;
     }

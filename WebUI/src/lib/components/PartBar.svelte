@@ -16,7 +16,11 @@
   let broken = $derived(part.breakCount > 0)
 </script>
 
-<div class="part" class:broken title="{prettifyName(part.name)} — HP {part.health.toFixed(0)}/{part.maxHealth.toFixed(0)} · Flinch {part.flinch.toFixed(0)}/{part.maxFlinch.toFixed(0)}{broken ? ` · broken ×${part.breakCount}` : ''}">
+<div
+  class="part-chip"
+  class:broken
+  title="{prettifyName(part.name)} — HP {part.health.toFixed(0)}/{part.maxHealth.toFixed(0)} · Flinch {part.flinch.toFixed(0)}/{part.maxFlinch.toFixed(0)}{broken ? ` · broken ×${part.breakCount}` : ''}"
+>
   <span class="part-name">{prettifyName(part.name)}{#if broken}<sup>×{part.breakCount}</sup>{/if}</span>
   <div class="micro-bars">
     <div class="micro-bar">
@@ -33,24 +37,29 @@
 </div>
 
 <style>
-  .part {
+  .part-chip {
     display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1 1 5.5rem;
+    min-width: 5.5rem;
+    padding: 0.25rem 0.4rem;
+    background: var(--bg-panel-alt);
+    border: 1px solid var(--border);
+    border-radius: 0.25rem;
   }
 
-  .part.broken .part-name {
+  .part-chip.broken .part-name {
     color: var(--text-dim);
     text-decoration: line-through;
   }
 
   .part-name {
-    font-size: 0.72rem;
-    flex: 0 1 auto;
-    max-width: 45%;
+    font-size: 0.68rem;
     line-height: 1.15;
-    /* Full name always visible: wraps instead of being ellipsed */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .part-name sup {
@@ -61,19 +70,17 @@
     display: flex;
     flex-direction: column;
     gap: 1px;
-    flex: 1;
-    min-width: 0;
   }
 
   .micro-bar {
-    height: 0.4rem;
+    height: 0.32rem;
     background: #0a0d12;
     border-radius: 2px;
     overflow: hidden;
   }
 
   .micro-bar.thin {
-    height: 0.2rem;
+    height: 0.16rem;
   }
 
   .micro-fill {
