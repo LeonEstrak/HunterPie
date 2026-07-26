@@ -164,4 +164,35 @@
   .conn-degraded { color: var(--stamina); }
   .conn-offline, .conn-no-session { color: var(--enrage); }
   .conn-connecting { color: var(--text-dim); }
+
+  /* Phone: shrink to a single compact strip */
+  @media (max-width: 700px) {
+    .header {
+      gap: 0.4rem;
+      padding: 0.4rem 0.5rem;
+    }
+
+    .game-name,
+    .status .dim,
+    .badge {
+      display: none;
+    }
+
+    .logo {
+      font-size: 0.8rem;
+    }
+
+    .quest-name {
+      font-size: 0.75rem;
+      max-width: 10em;
+    }
+
+    .quest-timer {
+      font-size: 0.85rem;
+    }
+
+    .conn {
+      font-size: 0.65rem;
+    }
+  }
 </style>

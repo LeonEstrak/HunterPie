@@ -196,4 +196,20 @@
   .empty {
     color: var(--text-dim);
   }
+
+  /* Phone: condense to essentials */
+  @media (max-width: 700px) {
+    .stats {
+      gap: 0.5rem;
+      font-size: 0.7rem;
+    }
+
+    .weapon-block {
+      padding-top: 0.15rem;
+    }
+
+    .player-name {
+      font-size: 0.9rem;
+    }
+  }
 </style>

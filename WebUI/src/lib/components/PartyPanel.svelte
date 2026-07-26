@@ -110,4 +110,36 @@
   .empty {
     color: var(--text-dim);
   }
+
+  /* Phone: members become a compact horizontal strip */
+  @media (max-width: 700px) {
+    .members {
+      flex-direction: row;
+      gap: 0.3rem;
+    }
+
+    .member {
+      flex: 1;
+      min-width: 0;
+      gap: 0.3rem;
+      padding: 0.2rem 0.3rem;
+    }
+
+    .member-sub,
+    .damage-track {
+      display: none;
+    }
+
+    .member-name {
+      font-size: 0.7rem;
+    }
+
+    .damage-num {
+      font-size: 0.7rem;
+    }
+
+    .member-damage {
+      min-width: 0;
+    }
+  }
 </style>

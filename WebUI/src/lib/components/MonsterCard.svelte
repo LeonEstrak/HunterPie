@@ -209,4 +209,20 @@
     flex-wrap: wrap;
     gap: 0.25rem;
   }
+
+  /* Phone: collapse detail sections, keep bars + flags */
+  @media (max-width: 700px) {
+    .parts,
+    .ailments {
+      display: none;
+    }
+
+    .monster-title h2 {
+      font-size: 0.95rem;
+    }
+
+    .hp-bar {
+      height: 1.1rem;
+    }
+  }
 </style>
