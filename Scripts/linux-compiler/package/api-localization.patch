@@ -1,0 +1,53 @@
+From 361676d4b9d0cf84a93f502e4da5f722596af230 Mon Sep 17 00:00:00 2001
+From: Aniket Chakraborty <aniket2583@gmail.com>
+Date: Sun, 26 Jul 2026 13:55:17 +0530
+Subject: [PATCH] feat(en-us): add API server settings strings
+
+Strings for the ApiClientConfig settings section: API tab, enable,
+bind-all-interfaces, port, auth token, broadcast interval, and the
+API SERVER configuration group.
+---
+ localization/en-us.xml | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/localization/en-us.xml b/localization/en-us.xml
+index 4bcb77d..15360d4 100644
+--- a/localization/en-us.xml
++++ b/localization/en-us.xml
+@@ -4057,6 +4057,24 @@
+             <Setting Id="DISCORD_RPC_STRING"
+                      String="Discord Presence"
+                      Description="Discord Rich Presence configurations" />
++            <Setting Id="API_STRING"
++                     String="API"
++                     Description="API server configurations" />
++            <Setting Id="ENABLE_API_SERVER"
++                     String="Enable API server"
++                     Description="If enabled, HunterPie will expose live game data through a local HTTP/WebSocket API that external tools can consume." />
++            <Setting Id="API_SERVER_BIND_ALL_INTERFACES"
++                     String="Listen on all interfaces"
++                     Description="If enabled, the API server will be reachable from other devices on the network. If disabled, it will only listen on localhost." />
++            <Setting Id="API_SERVER_PORT"
++                     String="API server port"
++                     Description="Port the API server will listen on." />
++            <Setting Id="API_SERVER_AUTH_TOKEN"
++                     String="API server auth token"
++                     Description="Optional bearer token required to access the API. Leave empty to allow unauthenticated access." />
++            <Setting Id="API_SERVER_BROADCAST_INTERVAL"
++                     String="Broadcast interval (ms)"
++                     Description="Interval in milliseconds between WebSocket state broadcasts." />
+             <Setting Id="OVERLAY_STRING"
+                      String="Overlay"
+                      Description="Overlay configurations" />
+@@ -4533,6 +4551,8 @@
+                    String="RENDERING" />
+             <Group Id="CONFIGURATION_GROUP_SCANNING"
+                    String="SCANNING" />
++            <Group Id="CONFIGURATION_GROUP_API_SERVER"
++                   String="API SERVER" />
+             <Group Id="CONFIGURATION_GROUP_CLIENT"
+                    String="CLIENT" />
+             <Group Id="CONFIGURATION_GROUP_OVERLAY"
+-- 
+2.53.0
+

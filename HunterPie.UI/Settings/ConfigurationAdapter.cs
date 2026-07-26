@@ -28,6 +28,43 @@ public class ConfigurationAdapter(
     private readonly IFeatureFlagRepository _featureFlagRepository = featureFlagRepository;
     private readonly ILocalizationRepository _localizationRepository = localizationRepository;
 
+    /// <summary>
+    /// Resolves a Setting localization by id, falling back to a humanized
+    /// form of the id (e.g. "ENABLE_API_SERVER" -> "Enable API Server")
+    /// instead of the raw XPath when the string is missing. Localization
+    /// files are self-updated from the CDN, so locally added settings may
+    /// legitimately lack strings.
+    /// </summary>
+    private LocalizationData LocalizeSetting(string id)
+    {
+        string path = DEFAULT_SETTING_LOCALIZATION_PATH.Format(id);
+        LocalizationData localization = _localizationRepository.FindBy(path);
+
+        return localization.String == path
+            ? localization with { String = HumanizeLocalizationId(id), Description = string.Empty }
+            : localization;
+    }
+
+    private string LocalizeGroup(string id)
+    {
+        string path = DEFAULT_CONFIGURATION_GROUP_PATH.Format(id);
+        string localized = _localizationRepository.FindStringBy(path);
+
+        return localized == path ? HumanizeLocalizationId(id) : localized;
+    }
+
+    private static string HumanizeLocalizationId(string id)
+    {
+        string[] words = id.Split('_', StringSplitOptions.RemoveEmptyEntries)
+            .Where(word => word is not "STRING" and not "CONFIGURATION" and not "GROUP")
+            .Select(word => word.Length <= 3 && word.All(char.IsUpper)
+                ? word
+                : char.ToUpperInvariant(word[0]) + word[1..].ToLowerInvariant())
+            .ToArray();
+
+        return string.Join(' ', words);
+    }
+
     public ObservableCollection<ConfigurationCategoryGroup> Adapt<T>(T configuration, GameProcessType game = GameProcessType.None) where T : notnull
     {
         ConfigurationCategory[] categories = BuildCategoryParent(configuration.GetType(), configuration, game);
@@ -83,7 +120,7 @@ public class ConfigurationAdapter(
         if (!configurationAttribute.AvailableGames.HasFlag(game))
             return Array.Empty<ConfigurationCategory>();
 
-        LocalizationData localization = _localizationRepository.FindBy(DEFAULT_SETTING_LOCALIZATION_PATH.Format(configurationAttribute.Name));
+        LocalizationData localization = LocalizeSetting(configurationAttribute.Name);
 
         List<ConfigurationCategory> categories = new();
         List<IConfigurationProperty> configurationProperties = new();
@@ -126,8 +163,8 @@ public class ConfigurationAdapter(
 
             availableProperties.Add(property.Name, (propertyValue, allConditions));
 
-            LocalizationData propertyLocalization = _localizationRepository.FindBy(DEFAULT_SETTING_LOCALIZATION_PATH.Format(propertyAttribute.Name));
-            string groupLocalization = _localizationRepository.FindStringBy(DEFAULT_CONFIGURATION_GROUP_PATH.Format(propertyAttribute.Group));
+            LocalizationData propertyLocalization = LocalizeSetting(propertyAttribute.Name);
+            string groupLocalization = LocalizeGroup(propertyAttribute.Group);
 
             GameConfigurationAdapterAttribute? adapterAttribute =
                 property.GetCustomAttribute<GameConfigurationAdapterAttribute>();
