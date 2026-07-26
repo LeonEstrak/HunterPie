@@ -93,6 +93,18 @@ if [[ -f "$SEED_CONFIG" ]]; then
     echo "[publish] Seeded config.json (overlay disabled, core + API enabled)"
 fi
 
+# Build and bundle the WebUI (served by the API server from ./WebUI)
+WEBUI_DIR="$HUNTERPIE_CC_REPO_ROOT/WebUI"
+if command -v npm >/dev/null 2>&1 && [[ -f "$WEBUI_DIR/package.json" ]]; then
+    echo "[publish] Building WebUI"
+    (cd "$WEBUI_DIR" && npm install --no-audit --no-fund --silent && npm run build --silent)
+    rm -rf "$OUTPUT_DIR/WebUI"
+    cp -r "$WEBUI_DIR/dist" "$OUTPUT_DIR/WebUI"
+    echo "[publish] Bundled WebUI ($(du -h "$OUTPUT_DIR/WebUI" | cut -f1))"
+else
+    echo "[publish] WARNING: npm or WebUI not found, package will not include the WebUI" >&2
+fi
+
 if [[ "$SELF_CONTAINED" -eq 0 ]]; then
     echo "[publish] Creating archive..."
     ZIP_PATH="$ARTIFACTS_DIR/HunterPie-v$VERSION-$SUFFIX.zip"
