@@ -30,7 +30,7 @@
   )
 </script>
 
-<article class="monster panel" class:enraged={monster.isEnraged} class:dead>
+<article class="monster panel" class:enraged={monster.isEnraged} class:dead class:engaged={monster.isEngaged}>
   <header class="monster-header">
     <div class="monster-title">
       {#if CROWNS[monster.crown]}
@@ -42,6 +42,9 @@
       {/if}
     </div>
     <div class="monster-flags">
+      {#if monster.isEngaged}
+        <span class="flag engaged-flag">TARGETED</span>
+      {/if}
       {#if monster.isEnraged}
         <span class="flag enrage-flag">ENRAGED</span>
       {/if}
@@ -106,6 +109,17 @@
 
   .monster.dead {
     opacity: 0.55;
+  }
+
+  .monster.engaged {
+    border-color: var(--accent);
+    box-shadow: 0 0 8px 0 rgba(240, 180, 41, 0.25);
+  }
+
+  .engaged-flag {
+    background: rgba(240, 180, 41, 0.15);
+    color: var(--accent);
+    border: 1px solid var(--accent);
   }
 
   @keyframes enrage-pulse {

@@ -47,6 +47,10 @@ internal class MonsterDto
     public float CaptureThreshold { get; set; }
     public string Target { get; set; } = string.Empty;
     public string ManualTarget { get; set; } = string.Empty;
+
+    /// <summary>True when the player is inferred to be engaged with this monster
+    /// (recent damage, proximity and health heuristics).</summary>
+    public bool IsEngaged { get; set; }
     public PositionDto? Position { get; set; }
     public List<string> Weaknesses { get; set; } = new();
     public List<string> Types { get; set; } = new();

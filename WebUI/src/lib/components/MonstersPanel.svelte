@@ -4,9 +4,11 @@
 
   const MAX_VISIBLE = 3
 
-  // Targeted monster first, then by remaining HP fraction
+  // Engaged monster first, then raw targets, then by remaining HP fraction
   let sorted = $derived(
     [...$monsters].sort((a, b) => {
+      if (a.isEngaged !== b.isEngaged) return a.isEngaged ? -1 : 1
+
       const aTargeted = a.target !== 'None' || a.manualTarget !== 'None' ? 1 : 0
       const bTargeted = b.target !== 'None' || b.manualTarget !== 'None' ? 1 : 0
 

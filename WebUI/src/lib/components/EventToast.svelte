@@ -10,6 +10,7 @@
     'monster.death': (d) => `${d.name} slain`,
     'monster.capture': (d) => `${d.name} captured`,
     'monster.enrage': (d) => `${d.name} is enraged!`,
+    'monster.engaged': (d) => `Engaging ${d.name}`,
     'player.death': () => 'You fainted',
     'player.login': (d) => `Logged in as ${d.name}`,
     'player.logout': () => 'Logged out',

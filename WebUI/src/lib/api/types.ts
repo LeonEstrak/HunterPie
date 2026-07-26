@@ -111,6 +111,8 @@ export interface Monster {
   stamina: number; maxStamina: number
   isEnraged: boolean; captureThreshold: number
   target: string; manualTarget: string
+  /** True when the player is inferred to be engaged with this monster */
+  isEngaged: boolean
   position: Vec3 | null
   weaknesses: string[]; types: string[]
   parts: MonsterPart[]; ailments: MonsterAilment[]

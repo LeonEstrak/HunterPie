@@ -12,9 +12,12 @@ using HunterPie.Core.Game.Entity.Party;
 using HunterPie.Core.Game.Entity.Player;
 using HunterPie.Core.Game.Entity.Player.Classes;
 using HunterPie.Core.Game.Events;
+using HunterPie.Core.Game.Services.Monster;
 using HunterPie.Core.Observability.Logging;
 using HunterPie.Domain.Interfaces;
 using HunterPie.Features.Api.Models;
+using HunterPie.Integrations.Datasources.Common.Monster;
+using HunterPie.Integrations.Datasources.MonsterHunterWorld;
 using HunterPie.Integrations.Datasources.MonsterHunterRise.Entity.Player;
 using HunterPie.Integrations.Datasources.MonsterHunterWilds.Entity.Player;
 using HunterPie.Integrations.Datasources.MonsterHunterWorld.Entity.Player;
@@ -36,6 +39,8 @@ internal class ApiContextTracker(GameSessionSnapshot snapshot) : IContextInitial
     private IWeapon? _hookedWeapon;
     private IQuest? _hookedQuest;
     private IChat? _hookedChat;
+    private WeightedTargetDetectionService? _targetDetectionService;
+    private IMonster? _engagedMonster;
 
     private readonly Dictionary<IMonster, MonsterDto> _monsters = new();
     private readonly Dictionary<IMonsterPart, MonsterPartDto> _parts = new();
@@ -105,10 +110,51 @@ internal class ApiContextTracker(GameSessionSnapshot snapshot) : IContextInitial
 
             HookTools(context.Game.Player);
             HookWirebugs(context.Game.Player);
+            InitializeTargetDetection(context);
         }, "session initialization");
 
         return Task.CompletedTask;
     }
+
+    /// <summary>
+    /// Sets up the same target inference the monster overlay widget uses:
+    /// flags the monster the player is engaged with based on recent damage,
+    /// proximity and health heuristics.
+    /// </summary>
+    private void InitializeTargetDetection(IContext context)
+    {
+        DistanceFunc distanceFunc = context switch
+        {
+            MHWContext => static (System.Numerics.Vector3 playerPosition, System.Numerics.Vector3 monsterPosition) =>
+                System.Numerics.Vector3.Distance(playerPosition, monsterPosition) / 100.0f,
+            _ => System.Numerics.Vector3.Distance
+        };
+
+        _targetDetectionService = new WeightedTargetDetectionService(context, distanceFunc);
+        _targetDetectionService.Initialize();
+        _targetDetectionService.OnTargetChanged += OnEngagedTargetChanged;
+    }
+
+    private void OnEngagedTargetChanged(object? sender, HunterPie.Core.Game.Services.Monster.Events.InferTargetChangedEventArgs e) => Safe(() =>
+    {
+        _engagedMonster = e.Target;
+
+        _snapshot.ExecuteLocked(snapshot =>
+        {
+            foreach ((IMonster monster, MonsterDto dto) in _monsters)
+                dto.IsEngaged = monster == _engagedMonster;
+
+            snapshot.MarkDirty("monsters");
+
+            if (_engagedMonster is not null && _monsters.TryGetValue(_engagedMonster, out MonsterDto? engaged))
+                snapshot.PendingEvents.Enqueue(new
+                {
+                    type = "event",
+                    @event = "monster.engaged",
+                    data = new { index = engaged.Index, id = engaged.Id, name = engaged.Name }
+                });
+        });
+    }, "engaged target change");
 
     private void HookGame(IContext context)
     {
@@ -676,6 +722,7 @@ internal class ApiContextTracker(GameSessionSnapshot snapshot) : IContextInitial
         _snapshot.ExecuteLocked(snapshot =>
         {
             AddMonster(snapshot, monster);
+            _monsters[monster].IsEngaged = monster == _engagedMonster;
             snapshot.MarkDirty("monsters");
 
             MonsterDto dto = _monsters[monster];
@@ -1060,6 +1107,15 @@ internal class ApiContextTracker(GameSessionSnapshot snapshot) : IContextInitial
 
             UnhookTools();
             UnhookWirebugs();
+
+            if (_targetDetectionService is not null)
+            {
+                _targetDetectionService.OnTargetChanged -= OnEngagedTargetChanged;
+                _targetDetectionService.Dispose();
+                _targetDetectionService = null;
+            }
+
+            _engagedMonster = null;
 
             _monsters.Clear();
             _parts.Clear();
