@@ -67,7 +67,7 @@ Build logs: `~/.local/share/hunterpie-compile-check/logs/`.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `HUNTERPIE_CC_APPID` | `582010` | Steam AppID of an installed Proton game whose prefix hosts the build |
+| `HUNTERPIE_CC_APPID` | `367520` | Steam AppID of an installed Proton game whose prefix hosts the build (avoid SteamTinkerLaunch-managed games — protontricks cannot handle them) |
 | `HUNTERPIE_CC_TOOLCHAIN_DIR` | `~/.local/share/hunterpie-compile-check` | Toolchain + logs |
 | `HUNTERPIE_CC_SDK_CHANNEL` | `10.0` | .NET SDK channel |
 | `HUNTERPIE_CC_CONFIGURATION` | `Debug` | MSBuild configuration |

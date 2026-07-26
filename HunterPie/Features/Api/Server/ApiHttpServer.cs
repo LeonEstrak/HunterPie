@@ -26,6 +26,9 @@ internal class ApiHttpServer : IDisposable
 
     public RouteTable Routes => _routes;
 
+    /// <summary>Optional static file server (WebUI bundle), consulted on route miss.</summary>
+    public StaticFileServer? StaticFiles { get; set; }
+
     public void Start(IPAddress address, int port)
     {
         _listener = new TcpListener(address, port);
@@ -89,7 +92,14 @@ internal class ApiHttpServer : IDisposable
 
                 if (!_routes.TryMatch(request, out ApiRouteHandler? handler) || handler is null)
                 {
-                    await HttpResponse.WriteErrorAsync(stream, 404, "not_found", cancellationToken);
+                    bool servedStatic = StaticFiles is not null
+                        && !request.Path.StartsWith("/api", StringComparison.OrdinalIgnoreCase)
+                        && !request.Path.StartsWith("/ws", StringComparison.OrdinalIgnoreCase)
+                        && await StaticFiles.TryServeAsync(request.Path, stream, cancellationToken);
+
+                    if (!servedStatic)
+                        await HttpResponse.WriteErrorAsync(stream, 404, "not_found", cancellationToken);
+
                     return;
                 }
 

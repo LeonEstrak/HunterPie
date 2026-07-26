@@ -53,6 +53,7 @@ PUBLISH_ARGS=(
     -nr:false
     -m:1
     -p:UseSharedCompilation=false
+    -p:SkipPostBuild=true
 )
 
 if [[ "$SELF_CONTAINED" -eq 1 ]]; then

@@ -43,6 +43,7 @@ BUILD_LOG="$LOG_DIR/build-$(date +%Y%m%d-%H%M%S).log"
 # -nr:false            -> do not keep MSBuild nodes resident (Wine stability)
 # -m:1                 -> single-process build (Wine stability)
 # UseSharedCompilation -> avoid the Roslyn compiler server (named pipes under Wine)
+# SkipPostBuild       -> PostBuild batch (xcopy/del) is Windows-CI oriented; publish-release.sh handles packaging
 BUILD_ARGS=(
     build
     "$HUNTERPIE_CC_WINE_REPO_ROOT/$HUNTERPIE_CC_PROJECT"
@@ -51,6 +52,7 @@ BUILD_ARGS=(
     -nr:false
     -m:1
     -p:UseSharedCompilation=false
+    -p:SkipPostBuild=true
 )
 
 echo "[compile-check] Building $HUNTERPIE_CC_PROJECT ($HUNTERPIE_CC_CONFIGURATION) in prefix $HUNTERPIE_CC_APPID"
@@ -77,6 +79,7 @@ if [[ "$RUN_TESTS" -eq 1 ]]; then
         -nr:false
         -m:1
         -p:UseSharedCompilation=false
+    -p:SkipPostBuild=true
     )
     echo "[compile-check] Running unit tests..."
     "$SCRIPT_DIR/run-in-prefix.sh" "$HUNTERPIE_CC_WINE_DOTNET" "${TEST_ARGS[@]}" 2>&1 | tee -a "$BUILD_LOG"

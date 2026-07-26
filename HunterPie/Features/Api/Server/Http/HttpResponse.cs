@@ -50,6 +50,27 @@ internal static class HttpResponse
         cancellationToken
     );
 
+    public static async Task WriteFileAsync(
+        NetworkStream stream,
+        string contentType,
+        string cacheControl,
+        byte[] content,
+        CancellationToken cancellationToken = default
+    )
+    {
+        string headers =
+            "HTTP/1.1 200 OK\r\n" +
+            $"Content-Type: {contentType}\r\n" +
+            $"Content-Length: {content.Length}\r\n" +
+            $"Cache-Control: {cacheControl}\r\n" +
+            "Access-Control-Allow-Origin: *\r\n" +
+            "Connection: close\r\n" +
+            "\r\n";
+
+        await stream.WriteAsync(System.Text.Encoding.ASCII.GetBytes(headers), cancellationToken);
+        await stream.WriteAsync(content, cancellationToken);
+    }
+
     public static async Task WriteCorsPreflightAsync(NetworkStream stream, CancellationToken cancellationToken = default)
     {
         string headers =

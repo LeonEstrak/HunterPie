@@ -3,9 +3,10 @@
 # Sourced by the other scripts in this directory.
 
 # Steam AppID whose Proton prefix hosts the build environment.
-# 582010 = Monster Hunter: World. Any installed Proton game works;
-# the prefix is only used as a Wine runtime container.
-export HUNTERPIE_CC_APPID="${HUNTERPIE_CC_APPID:-582010}"
+# 367520 = Hollow Knight. Any installed Proton game works; the prefix is
+# only used as a Wine runtime container. Note: pick a game whose compat
+# tool protontricks supports (NOT SteamTinkerLaunch-managed games).
+export HUNTERPIE_CC_APPID="${HUNTERPIE_CC_APPID:-367520}"
 
 # Where the Windows .NET SDK toolchain lives (Linux-side path).
 export HUNTERPIE_CC_TOOLCHAIN_DIR="${HUNTERPIE_CC_TOOLCHAIN_DIR:-$HOME/.local/share/hunterpie-compile-check}"

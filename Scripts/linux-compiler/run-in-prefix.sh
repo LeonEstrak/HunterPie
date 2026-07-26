@@ -53,4 +53,34 @@ done
 # --no-bwrap: the Steam Runtime sandbox does not bind-mount /var/home
 # (where both this repo and the toolchain live on this system), which
 # would make Wine's Z: paths dangle. The build does not need the sandbox.
-exec protontricks --no-term --no-bwrap -c "$CMD" "$HUNTERPIE_CC_APPID"
+if protontricks --no-term --no-bwrap -c "$CMD" "$HUNTERPIE_CC_APPID"; then
+    exit 0
+fi
+
+# Fallback: protontricks rejects prefixes whose active compat tool it does
+# not recognize (e.g. Proton Experimental). Invoke that Proton's wine
+# directly against the same prefix; when the game is running, this also
+# shares the already-running wineserver.
+STEAM_COMMON="$HOME/.local/share/Steam/steamapps/common"
+PROTON_BIN=""
+for candidate in \
+    ${HUNTERPIE_CC_PROTON:+"$HUNTERPIE_CC_PROTON"} \
+    "$STEAM_COMMON/Proton - Experimental/proton" \
+    "$STEAM_COMMON/Proton Hotfix/proton" \
+    "$STEAM_COMMON/Proton 10.0/proton" \
+    "$STEAM_COMMON/Proton 9.0 (Beta)/proton"; do
+    if [[ -n "$candidate" && -f "$candidate" ]]; then
+        PROTON_BIN="$candidate"
+        break
+    fi
+done
+
+if [[ -z "$PROTON_BIN" ]]; then
+    echo "[run-in-prefix] ERROR: protontricks failed and no usable Proton found" >&2
+    exit 1
+fi
+
+echo "[run-in-prefix] protontricks failed; falling back to: $PROTON_BIN run" >&2
+export STEAM_COMPAT_DATA_PATH="$PREFIX_DIR"
+export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+exec python3 "$PROTON_BIN" run "$@"

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -62,7 +63,14 @@ internal class ApiServerService : IDisposable
 
         try
         {
-            _server = new ApiHttpServer();
+            _server = new ApiHttpServer
+            {
+                StaticFiles = StaticFileServer.Create(Path.Combine(ClientInfo.ClientPath, "WebUI"))
+            };
+
+            if (_server.StaticFiles is not null)
+                _logger.Info("API server is serving the WebUI bundle");
+
             MapRoutes(_server);
             _server.Start(address, port);
             _broadcastService.Start();
